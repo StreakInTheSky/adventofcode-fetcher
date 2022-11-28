@@ -1,51 +1,73 @@
+// Package fetcher grabs inputs for the user from Advent of Code.
+// Validates url inputs for valid Advent of Code urls
+// Makes sure there is a cookie for the request
 package fetcher
 
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
-const first_year = 2015
-const current_year = 2022
+const firstYear = 2015
+const currentYear = 2022
 
-func validate_url(input_url string) error {
-	parsed_url, err := url.Parse(input_url)
+func validateURL(inputURL string) error {
+	parsedURL, err := url.Parse(inputURL)
 
 	if err != nil {
 		return err
 	}
 
-	if parsed_url.Host != "adventofcode.com" {
-		return errors.New(fmt.Sprintf("%s is not a valid advent of code url", input_url))
+	if parsedURL.Host != "adventofcode.com" {
+		return fmt.Errorf("%s is not a valid advent of code url", inputURL)
 	}
 
-	parsed_path := strings.Split(parsed_url.Path, "/")
+	parsedPath := strings.Split(parsedURL.Path, "/")
 
-	if len(parsed_path) < 4 {
+	if len(parsedPath) < 4 {
 		return errors.New("Url did not include a day")
 	}
 
-	year, err := strconv.Atoi(parsed_path[1])
+	year, err := strconv.Atoi(parsedPath[1])
 	if err != nil {
 		return err
 	}
-	if year < first_year || year > current_year {
-		return errors.New(fmt.Sprintf("Invalid year: %d", year))
+	if year < firstYear || year > currentYear {
+		return fmt.Errorf("Invalid year: %d", year)
 	}
 
-	if parsed_path[2] != "day" {
+	if parsedPath[2] != "day" {
 		return errors.New("Url does not include day")
 	}
 
-	day, err := strconv.Atoi(parsed_path[3])
+	day, err := strconv.Atoi(parsedPath[3])
 	if err != nil {
 		return err
 	}
 	if day < 1 || day > 25 {
-		return errors.New(fmt.Sprintf("%d is not a valid day", day))
+		return fmt.Errorf("%d is not a valid day", day)
+	}
+
+	return nil
+}
+
+func checkCookie(cookie http.Cookie) error {
+	if cookie.Name != "session" || cookie.Value == "" {
+		return errors.New("No session cookie")
+	}
+
+	if !regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(cookie.Value) {
+		return errors.New("Not a valid session cookie")
+	}
+
+	if !cookie.Expires.IsZero() && cookie.Expires.Before(time.Now()) {
+		return errors.New("Expired session cookie")
 	}
 
 	return nil
