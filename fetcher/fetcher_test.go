@@ -8,162 +8,183 @@ import (
 )
 
 // Tests for Url Validater
+func TestURLValidation (t *testing.T) {
 
-func TestValidateUrl(t *testing.T) {
-	url := "https://adventofcode.com/2022/day/1"
+	t.Run("", func TestValidateUrl(t *testing.T) {
+		t.Parallel()
+		url := "https://adventofcode.com/2022/day/1"
 
-	if err := validateURL(url); err != nil {
-		t.Error(err)
-	}
+		if err := validateURL(url); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("", func TestErrorIfNotUrl(t *testing.T) {
+		t.Parallel()
+		url := "123"
+
+		if err := validateURL(url); err == nil {
+			t.Errorf("%s should not be a valid url", url)
+		}
+	})
+
+	t.Run("", func TestErrorIfNotAdventOfCode(t *testing.T) {
+		t.Parallel()
+		url := "https://google.com"
+
+		if err := validateURL(url); err == nil {
+			t.Errorf("%s should return an error", url)
+		}
+
+	})
+
+	t.Run("", func TestErrorIfNoPath(t *testing.T) {
+		t.Parallel()
+		url := "https://adventofcode.com"
+
+		if err := validateURL(url); err == nil {
+			t.Errorf("%s should return an error", url)
+		}
+	})
+
+	t.Run("", func TestErrorIfPathTooShort(t *testing.T) {
+		t.Parallel()
+		url := "https://adventofcode.com"
+		path := "/1/2"
+
+		if err := validateURL(fmt.Sprintf("%s%s", url, path)); err == nil {
+			t.Errorf("Should have error because %s is too short", path)
+		}
+	})
+
+	t.Run("", func TestErrorIfPathTooLong(t *testing.T) {
+		t.Parallel()
+		url := "https://adventofcode.com"
+		path := "/1/2/3/4"
+
+		if err := validateURL(fmt.Sprintf("%s%s", url, path)); err == nil {
+			t.Errorf("Should have error because %s is too long", path)
+		}
+	})
+
+	t.Run("", func TestErrorIfNoYear(t *testing.T) {
+		t.Parallel()
+		url := "http://adventofcode.com/"
+		path := "not/a/year"
+
+		if err := validateURL(fmt.Sprintf("%s%s", url, path)); err == nil {
+			t.Errorf("Should have error because %s does not have a year", path)
+		}
+	})
+
+	t.Run("", func TestErrorOnEarlyYear(t *testing.T) {
+		t.Parallel()
+		url := "http://adventofcode.com/"
+		const year = 2014
+
+		if err := validateURL(fmt.Sprintf("%s%d", url, year)); err == nil {
+			t.Errorf("%d should be an invalid year", year)
+		}
+	})
+
+	t.Run("", func TestErrorOnLateYear(t *testing.T) {
+		t.Parallel()
+		url := "http://adventofcode.com/"
+		const year = 2023
+
+		if err := validateURL(fmt.Sprintf("%s%d", url, year)); err == nil {
+			t.Errorf("%d should be an invalid year", year)
+		}
+	})
+
+	t.Run("", func TestErrorIfDayNotInPath(t *testing.T) {
+		t.Parallel()
+		url := "http://adventofcode.com/2021"
+		notDay := "/not/1"
+
+		if err := validateURL(fmt.Sprintf("%s%s", url, notDay)); err == nil {
+			t.Error("Should be an error when no day in url", url)
+		}
+	})
+
+	t.Run("", func TestErrorIfDayTooLow(t *testing.T) {
+		t.Parallel()
+		url := "http://adventofcode.com/2021/day/"
+		day := 0
+
+		if err := validateURL(fmt.Sprintf("%s%d", url, day)); err == nil {
+			t.Errorf("%d should not be a valid day", day)
+		}
+	})
+
+	t.Run("", func TestErrorIfDayTooHigh(t *testing.T) {
+		t.Parallel()
+		url := "http://adventofcode.com/2021/day/"
+		day := 26
+
+		if err := validateURL(fmt.Sprintf("%s%d", url, day)); err == nil {
+			t.Errorf("%d should not be a valid day", day)
+		}
+	})
+
 }
-
-func TestErrorIfNotUrl(t *testing.T) {
-	url := "123"
-
-	if err := validateURL(url); err == nil {
-		t.Errorf("%s should not be a valid url", url)
-	}
-}
-
-func TestErrorIfNotAdventOfCode(t *testing.T) {
-	url := "https://google.com"
-
-	if err := validateURL(url); err == nil {
-		t.Errorf("%s should return an error", url)
-	}
-
-}
-
-func TestErrorIfNoPath(t *testing.T) {
-	url := "https://adventofcode.com"
-
-	if err := validateURL(url); err == nil {
-		t.Errorf("%s should return an error", url)
-	}
-}
-
-func TestErrorIfPathTooShort(t *testing.T) {
-	url := "https://adventofcode.com"
-	path := "/1/2"
-
-	if err := validateURL(fmt.Sprintf("%s%s", url, path)); err == nil {
-		t.Errorf("Should have error because %s is too short", path)
-	}
-}
-
-func TestErrorIfPathTooLong(t *testing.T) {
-	url := "https://adventofcode.com"
-	path := "/1/2/3/4"
-
-	if err := validateURL(fmt.Sprintf("%s%s", url, path)); err == nil {
-		t.Errorf("Should have error because %s is too long", path)
-	}
-}
-
-func TestErrorIfNoYear(t *testing.T) {
-	url := "http://adventofcode.com/"
-	path := "not/a/year"
-
-	if err := validateURL(fmt.Sprintf("%s%s", url, path)); err == nil {
-		t.Errorf("Should have error because %s does not have a year", path)
-	}
-}
-
-func TestErrorOnEarlyYear(t *testing.T) {
-	url := "http://adventofcode.com/"
-	const year = 2014
-
-	if err := validateURL(fmt.Sprintf("%s%d", url, year)); err == nil {
-		t.Errorf("%d should be an invalid year", year)
-	}
-}
-
-func TestErrorOnLateYear(t *testing.T) {
-	url := "http://adventofcode.com/"
-	const year = 2023
-
-	if err := validateURL(fmt.Sprintf("%s%d", url, year)); err == nil {
-		t.Errorf("%d should be an invalid year", year)
-	}
-}
-
-func TestErrorIfDayNotInPath(t *testing.T) {
-	url := "http://adventofcode.com/2021"
-	notDay := "/not/1"
-
-	if err := validateURL(fmt.Sprintf("%s%s", url, notDay)); err == nil {
-		t.Error("Should be an error when no day in url", url)
-	}
-}
-
-func TestErrorIfDayTooLow(t *testing.T) {
-	url := "http://adventofcode.com/2021/day/"
-	day := 0
-
-	if err := validateURL(fmt.Sprintf("%s%d", url, day)); err == nil {
-		t.Errorf("%d should not be a valid day", day)
-	}
-}
-
-func TestErrorIfDayTooHigh(t *testing.T) {
-	url := "http://adventofcode.com/2021/day/"
-	day := 26
-
-	if err := validateURL(fmt.Sprintf("%s%d", url, day)); err == nil {
-		t.Errorf("%d should not be a valid day", day)
-	}
-}
-
 // Tests for Cookie checker
 
-func TestValidCookie(t *testing.T) {
-	cookie := http.Cookie{
-		Name:  "session",
-		Value: "abcdef12345",
-	}
+func TestCookieChecker(t *testing.T) {
+	t.Run("", func TestValidCookie(t *testing.T) {
+		t.Parallel()
+		cookie := http.Cookie{
+			Name:  "session",
+			Value: "abcdef12345",
+		}
 
-	if err := checkCookie(cookie); err != nil {
-		t.Error("Should be a valid cookie")
-	}
-}
+		if err := checkCookie(cookie); err != nil {
+			t.Error("Should be a valid cookie")
+		}
+	})
 
-func TestErrorIfNoSessionCookie(t *testing.T) {
-	cookie := http.Cookie{}
+	t.Run("", func TestErrorIfNoSessionCookie(t *testing.T) {
+		t.Parallel()
+		cookie := http.Cookie{}
 
-	if err := checkCookie(cookie); err == nil {
-		t.Error("Should return error if no session cookie")
-	}
-}
+		if err := checkCookie(cookie); err == nil {
+			t.Error("Should return error if no session cookie")
+		}
+	})
 
-func TestErrorIfNoSessionCookieValue(t *testing.T) {
-	cookie := http.Cookie{
-		Name: "session",
-	}
+	t.Run("", func TestErrorIfNoSessionCookieValue(t *testing.T) {
+		t.Parallel()
+		cookie := http.Cookie{
+			Name: "session",
+		}
 
-	if err := checkCookie(cookie); err == nil {
-		t.Error("Should return error if no value for session cookie")
-	}
-}
+		if err := checkCookie(cookie); err == nil {
+			t.Error("Should return error if no value for session cookie")
+		}
+	})
 
-func TestErrorIfSessionCookieNotAlphaNumeric(t *testing.T) {
-	cookie := http.Cookie{
-		Name:  "session",
-		Value: "abc123!?.",
-	}
+	t.Run("", func TestErrorIfSessionCookieNotAlphaNumeric(t *testing.T) {
+		t.Parallel()
+		cookie := http.Cookie{
+			Name:  "session",
+			Value: "abc123!?.",
+		}
 
-	if err := checkCookie(cookie); err == nil {
-		t.Error("Should return error if session cookie not alphaumeric")
-	}
-}
+		if err := checkCookie(cookie); err == nil {
+			t.Error("Should return error if session cookie not alphaumeric")
+		}
+	})
 
-func TestErrorIfCookieIsExpired(t *testing.T) {
-	cookie := http.Cookie{
-		Name:    "session",
-		Value:   "abc123",
-		Expires: time.Unix(0, 0),
-	}
+	t.Run("", func TestErrorIfCookieIsExpired(t *testing.T) {
+		t.Parallel()
+		cookie := http.Cookie{
+			Name:    "session",
+			Value:   "abc123",
+			Expires: time.Unix(0, 0),
+		}
 
-	if err := checkCookie(cookie); err == nil {
-		t.Error("Should return error on expired cookie")
-	}
+		if err := checkCookie(cookie); err == nil {
+			t.Error("Should return error on expired cookie")
+		}
+	})
 }
