@@ -167,3 +167,50 @@ func TestErrorIfCookieIsExpired(t *testing.T) {
 		t.Error("Should return error on expired cookie")
 	}
 }
+
+// Tests Fetching Inputs
+func TestFetching(t *testing.T) {
+	t.Run("Should not return error with successful request", func(t *testing.T) {
+		t.Parallel()
+
+		url := "https://adventofcode.com/2021/day/1"
+		cookie := http.Cookie{
+			Name:  "session",
+			Value: "abc123",
+		}
+		if err := Fetch(url, cookie); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("Should return error for invalid url", func(t *testing.T) {
+		t.Parallel()
+
+		url := "http://google.com"
+		cookie := http.Cookie{
+			Name:  "session",
+			Value: "abc123",
+		}
+
+		if err := Fetch(url, cookie); err == nil {
+			t.Errorf("Should return an error with invalid url: %s", url)
+		}
+	})
+
+	t.Run("Should return error for invalid cookie", func(t *testing.T) {
+		t.Parallel()
+
+		url := "https://adventofcode.com/2021/day/1"
+		cookie := http.Cookie{
+			Name: "invalid",
+		}
+
+		if err := Fetch(url, cookie); err == nil {
+			t.Errorf("Should return error with invalid cooke: %s", cookie.String())
+		}
+	})
+
+	t.Run("Should return error if request has failed", func(t *testing.T) {
+		t.Skip()
+	})
+}

@@ -72,3 +72,14 @@ func checkCookie(cookie http.Cookie) error {
 
 	return nil
 }
+
+func Fetch(url string, cookie http.Cookie) error {
+	if err := validateURL(url); err != nil {
+		return err
+	}
+
+	if err := checkCookie(cookie); err != nil {
+		return err
+	}
+	return nil
+}
