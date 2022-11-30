@@ -73,13 +73,35 @@ func checkCookie(cookie http.Cookie) error {
 	return nil
 }
 
-func Fetch(url string, cookie http.Cookie) error {
-	if err := validateURL(url); err != nil {
-		return err
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+var Client HTTPClient
+
+func init() {
+	Client = &http.Client{}
+}
+
+func Fetch(url string, cookie http.Cookie) (res *http.Response, err error) {
+	if err = validateURL(url); err != nil {
+		return res, err
 	}
 
-	if err := checkCookie(cookie); err != nil {
-		return err
+	if err = checkCookie(cookie); err != nil {
+		return res, err
 	}
-	return nil
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return res, err
+	}
+
+	req.AddCookie(&cookie)
+	res, err = Client.Do(req)
+	if err != nil {
+		return res, err
+	}
+
+	return res, err
 }
