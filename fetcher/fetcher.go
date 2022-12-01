@@ -6,7 +6,6 @@ package fetcher
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -90,35 +89,30 @@ type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
-var Client HTTPClient
-
-func init() {
-	Client = &http.Client{}
+type Fetcher struct {
+	Client HTTPClient
+	url    string
+	cookie http.Cookie
 }
 
-func Fetch(url string, cookie http.Cookie) (res *http.Response, err error) {
-	if err = validateURL(url); err != nil {
+func (f Fetcher) Fetch() (res *http.Response, err error) {
+	if err = validateURL(f.url); err != nil {
 		return res, err
 	}
 
-	if err = checkCookie(cookie); err != nil {
+	if err = checkCookie(f.cookie); err != nil {
 		return res, err
 	}
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", f.url, nil)
 	if err != nil {
 		return res, err
 	}
 
-	req.AddCookie(&cookie)
-	res, err = Client.Do(req)
+	req.AddCookie(&f.cookie)
+	res, err = f.Client.Do(req)
 	if err != nil {
 		return res, err
-	}
-
-	log.Print(res.StatusCode)
-	if res.StatusCode >= 400 {
-		return res, errors.New("There was an error making the request")
 	}
 
 	return res, err

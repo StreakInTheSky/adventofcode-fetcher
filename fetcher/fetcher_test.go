@@ -201,7 +201,9 @@ func TestFetching(t *testing.T) {
 			Name:  "session",
 			Value: "abc123",
 		}
-		if _, err := Fetch(url, cookie); err != nil {
+
+		fetcher := Fetcher{&mockClient{}, url, cookie}
+		if _, err := fetcher.Fetch(); err != nil {
 			t.Error(err)
 		}
 	})
@@ -214,8 +216,9 @@ func TestFetching(t *testing.T) {
 			Name:  "session",
 			Value: "abc123",
 		}
+		fetcher := Fetcher{&mockClient{}, url, cookie}
 
-		if _, err := Fetch(url, cookie); err == nil {
+		if _, err := fetcher.Fetch(); err == nil {
 			t.Errorf("Should return an error with invalid url: %s", url)
 		}
 	})
@@ -227,8 +230,9 @@ func TestFetching(t *testing.T) {
 		cookie := http.Cookie{
 			Name: "invalid",
 		}
+		fetcher := Fetcher{&mockClient{}, url, cookie}
 
-		if _, err := Fetch(url, cookie); err == nil {
+		if _, err := fetcher.Fetch(); err == nil {
 			t.Errorf("Should return error with invalid cooke: %s", cookie.String())
 		}
 	})
@@ -242,16 +246,18 @@ func TestFetching(t *testing.T) {
 			Value: "abc123",
 		}
 
-		res := http.Response{
+		expected := http.Response{
 			StatusCode: 404,
 		}
-		Client = &mockClient{
-			res: res,
+		client := &mockClient{
+			res: expected,
 			err: errors.New("There was an error fetching the site"),
 		}
 
-		if _, err := Fetch(url, cookie); err == nil {
-			t.Error("Response should be an error")
+		fetcher := Fetcher{client, url, cookie}
+
+		if res, err := fetcher.Fetch(); err == nil {
+			t.Errorf("Request should return an error with status code %d, but got %d", expected.StatusCode, res.StatusCode)
 		}
 	})
 
@@ -267,13 +273,14 @@ func TestFetching(t *testing.T) {
 		expectedRes := http.Response{
 			StatusCode: 200,
 		}
-		Client = &mockClient{
+		client := &mockClient{
 			res: expectedRes,
 		}
+		fetcher := Fetcher{client, url, cookie}
 
-		res, err := Fetch(url, cookie)
+		res, err := fetcher.Fetch()
 		if err != nil {
-			t.Error("Response should be an error")
+			t.Errorf("Should not have an error, but got %s", err)
 		}
 
 		if res.StatusCode != expectedRes.StatusCode {
