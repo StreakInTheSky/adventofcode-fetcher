@@ -169,6 +169,27 @@ func TestErrorIfCookieIsExpired(t *testing.T) {
 	}
 }
 
+// Test Cookie Creation
+func TestCreatingCookie(t *testing.T) {
+	t.Run("Should create session cookie", func(t *testing.T) {
+		sessionId := "abc"
+
+		cookie, _ := MakeCookie(sessionId)
+		if cookie.Value != sessionId {
+			t.Errorf("Expected cookie to have value %s, got %s", sessionId, cookie.Value)
+		}
+	})
+
+	t.Run("Should return error if no sessionId", func(t *testing.T) {
+		var sessionId string
+
+		if _, err := MakeCookie(sessionId); err == nil {
+			t.Error("Expected error when no sessionId")
+		}
+
+	})
+}
+
 // Tests Fetching Inputs
 func TestFetching(t *testing.T) {
 	t.Parallel()

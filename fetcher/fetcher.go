@@ -6,6 +6,7 @@ package fetcher
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -73,6 +74,18 @@ func checkCookie(cookie http.Cookie) error {
 	return nil
 }
 
+func MakeCookie(sessionId string) (cookie http.Cookie, err error) {
+	if len(sessionId) == 0 {
+		return cookie, errors.New("sessionId must have a value")
+	}
+
+	cookie = http.Cookie{
+		Name:  "session",
+		Value: sessionId,
+	}
+	return cookie, err
+}
+
 type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
@@ -101,6 +114,11 @@ func Fetch(url string, cookie http.Cookie) (res *http.Response, err error) {
 	res, err = Client.Do(req)
 	if err != nil {
 		return res, err
+	}
+
+	log.Print(res.StatusCode)
+	if res.StatusCode >= 400 {
+		return res, errors.New("There was an error making the request")
 	}
 
 	return res, err
