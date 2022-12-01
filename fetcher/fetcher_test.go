@@ -1,6 +1,7 @@
 package fetcher
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"testing"
@@ -166,4 +167,106 @@ func TestErrorIfCookieIsExpired(t *testing.T) {
 	if err := checkCookie(cookie); err == nil {
 		t.Error("Should return error on expired cookie")
 	}
+}
+
+// Tests Fetching Inputs
+func TestFetching(t *testing.T) {
+	t.Parallel()
+	t.Run("Should not return error with successful request", func(t *testing.T) {
+		t.Parallel()
+
+		url := "https://adventofcode.com/2021/day/1"
+		cookie := http.Cookie{
+			Name:  "session",
+			Value: "abc123",
+		}
+		if _, err := Fetch(url, cookie); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("Should return error for invalid url", func(t *testing.T) {
+		t.Parallel()
+
+		url := "http://google.com"
+		cookie := http.Cookie{
+			Name:  "session",
+			Value: "abc123",
+		}
+
+		if _, err := Fetch(url, cookie); err == nil {
+			t.Errorf("Should return an error with invalid url: %s", url)
+		}
+	})
+
+	t.Run("Should return error for invalid cookie", func(t *testing.T) {
+		t.Parallel()
+
+		url := "https://adventofcode.com/2021/day/1"
+		cookie := http.Cookie{
+			Name: "invalid",
+		}
+
+		if _, err := Fetch(url, cookie); err == nil {
+			t.Errorf("Should return error with invalid cooke: %s", cookie.String())
+		}
+	})
+
+	t.Run("Should return error if request has failed", func(t *testing.T) {
+		t.Parallel()
+
+		url := "https://adventofcode.com/2021/day/1"
+		cookie := http.Cookie{
+			Name:  "session",
+			Value: "abc123",
+		}
+
+		res := http.Response{
+			StatusCode: 404,
+		}
+		Client = &mockClient{
+			res: res,
+			err: errors.New("There was an error fetching the site"),
+		}
+
+		if _, err := Fetch(url, cookie); err == nil {
+			t.Error("Response should be an error")
+		}
+	})
+
+	t.Run("Should return result", func(t *testing.T) {
+		t.Parallel()
+
+		url := "https://adventofcode.com/2021/day/1"
+		cookie := http.Cookie{
+			Name:  "session",
+			Value: "abc123",
+		}
+
+		expectedRes := http.Response{
+			StatusCode: 200,
+		}
+		Client = &mockClient{
+			res: expectedRes,
+		}
+
+		res, err := Fetch(url, cookie)
+		if err != nil {
+			t.Error("Response should be an error")
+		}
+
+		if res.StatusCode != expectedRes.StatusCode {
+			t.Errorf("Expected res.StatusCode to be %d, instead got %d", expectedRes.StatusCode, res.StatusCode)
+		}
+
+	})
+}
+
+type mockClient struct {
+	res http.Response
+	err error
+}
+
+func (c *mockClient) Do(req *http.Request) (*http.Response, error) {
+	return &c.res, c.err
 }
