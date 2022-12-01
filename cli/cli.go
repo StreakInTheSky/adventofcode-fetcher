@@ -1,6 +1,9 @@
 package cli
 
-import "errors"
+import (
+	"errors"
+	"os"
+)
 
 func ParseArgs(args []string) (string, error) {
 	var url string
@@ -13,4 +16,23 @@ func ParseArgs(args []string) (string, error) {
 	}
 
 	return args[2], nil
+}
+
+func checkSessionId(sessionId string) (string, error) {
+	if len(sessionId) == 0 {
+		return sessionId, errors.New("No session id found")
+	}
+
+	return sessionId, nil
+}
+
+func GrabSessionId() (sessionId string, err error) {
+	fileContent, err := os.ReadFile("./session")
+	if err != nil {
+		sessionId = os.Getenv("SESSION")
+	} else {
+		sessionId = string(fileContent)
+	}
+
+	return checkSessionId(sessionId)
 }

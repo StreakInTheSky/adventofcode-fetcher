@@ -1,8 +1,10 @@
 package cli
 
-import "testing"
+import (
+	"testing"
+)
 
-func TestCli(t *testing.T) {
+func TestParsingArgs(t *testing.T) {
 	t.Run("Error if no args in inputs", func(t *testing.T) {
 		args := []string{"command"}
 
@@ -33,6 +35,26 @@ func TestCli(t *testing.T) {
 		url, err := ParseArgs(args)
 		if err != nil || url != args[2] {
 			t.Errorf("Should return %s, got %s", args[2], url)
+		}
+	})
+}
+
+func TestGrabbingSessionId(t *testing.T) {
+	t.Run("Returns session id", func(t *testing.T) {
+		input := "abc"
+		expected := input
+
+		sessionId, err := checkSessionId(input)
+		if err != nil || sessionId != expected {
+			t.Errorf("Expected %s, got %s", expected, sessionId)
+		}
+	})
+
+	t.Run("Returns error if no cookie found", func(t *testing.T) {
+		input := ""
+
+		if _, error := checkSessionId(input); error == nil {
+			t.Error("Expected an error on a blank cookie")
 		}
 	})
 }
