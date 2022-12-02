@@ -5,6 +5,11 @@ import (
 	"os"
 )
 
+var (
+	readFile = os.ReadFile
+	getEnv   = os.Getenv
+)
+
 func ParseArgs(args []string) (string, error) {
 	var url string
 	if len(args) <= 1 || args[1] != "fetch" {
@@ -18,21 +23,17 @@ func ParseArgs(args []string) (string, error) {
 	return args[2], nil
 }
 
-func checkSessionId(sessionId string) (string, error) {
+func GrabSessionId() (sessionId string, err error) {
+	fileContent, err := readFile("./session")
+	if err != nil {
+		sessionId = getEnv("SESSION")
+	} else {
+		sessionId = string(fileContent)
+	}
+
 	if len(sessionId) == 0 {
 		return sessionId, errors.New("No session id found")
 	}
 
 	return sessionId, nil
-}
-
-func GrabSessionId() (sessionId string, err error) {
-	fileContent, err := os.ReadFile("./session")
-	if err != nil {
-		sessionId = os.Getenv("SESSION")
-	} else {
-		sessionId = string(fileContent)
-	}
-
-	return checkSessionId(sessionId)
 }

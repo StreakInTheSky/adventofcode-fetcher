@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"testing"
 )
 
@@ -40,21 +41,74 @@ func TestParsingArgs(t *testing.T) {
 }
 
 func TestGrabbingSessionId(t *testing.T) {
-	t.Run("Returns session id", func(t *testing.T) {
-		input := "abc"
-		expected := input
-
-		sessionId, err := checkSessionId(input)
-		if err != nil || sessionId != expected {
-			t.Errorf("Expected %s, got %s", expected, sessionId)
-		}
-	})
-
 	t.Run("Returns error if no cookie found", func(t *testing.T) {
-		input := ""
+		readFile = mockReadFile([]byte{}, nil)
+		getEnv = mockGetEnv("")
 
-		if _, error := checkSessionId(input); error == nil {
-			t.Error("Expected an error on a blank cookie")
+		sessionID, err := GrabSessionId()
+		if err == nil {
+			t.Errorf("Expected an error, got %s", sessionID)
 		}
 	})
+
+	t.Run("Returns sessionID from file when it exists", func(t *testing.T) {
+		mockFile := []byte{'a', 'b', 'c'}
+		expected := "abc"
+
+		readFile = mockReadFile(mockFile, nil)
+		getEnv = mockGetEnv("")
+
+		sessionID, err := GrabSessionId()
+		if err != nil {
+			t.Errorf("Expected no error, got %s", err)
+		}
+		if sessionID != expected {
+			t.Errorf("Expected %s, got %s", expected, sessionID)
+		}
+	})
+
+	t.Run("Returns sessionID from environment variable if file doesn't exist", func(t *testing.T) {
+		mockValue := "abc"
+		expected := mockValue
+
+		readFile = mockReadFile([]byte{}, errors.New("No file"))
+		getEnv = mockGetEnv(mockValue)
+
+		sessionID, err := GrabSessionId()
+		if err != nil {
+			t.Errorf("Expected no error, got %s", err)
+		}
+		if sessionID != expected {
+			t.Errorf("Expected %s, got %s", expected, sessionID)
+		}
+	})
+
+	t.Run("Returns sessionID from file if both file and env variable exist", func(t *testing.T) {
+		mockFile := []byte{'a', 'b', 'c'}
+		mockValue := "123"
+		expected := "abc"
+
+		readFile = mockReadFile(mockFile, nil)
+		getEnv = mockGetEnv(mockValue)
+
+		sessionID, err := GrabSessionId()
+		if err != nil {
+			t.Errorf("Expected no error, got %s", err)
+		}
+		if sessionID != expected {
+			t.Errorf("Expected %s, got %s", expected, sessionID)
+		}
+	})
+}
+
+func mockReadFile(file []byte, err error) func(string) ([]byte, error) {
+	return func(path string) ([]byte, error) {
+		return file, err
+	}
+}
+
+func mockGetEnv(value string) func(string) string {
+	return func(key string) string {
+		return value
+	}
 }
