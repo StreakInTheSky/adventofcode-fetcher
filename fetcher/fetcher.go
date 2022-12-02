@@ -17,6 +17,12 @@ import (
 const firstYear = 2015
 const currentYear = 2022
 
+type httpClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+var client httpClient = &http.Client{}
+
 func validateURL(inputURL string) error {
 	parsedURL, err := url.Parse(inputURL)
 
@@ -73,16 +79,20 @@ func checkCookie(cookie http.Cookie) error {
 	return nil
 }
 
-type HTTPClient interface {
-	Do(req *http.Request) (*http.Response, error)
+// MakeCookie makes a session cookie from a sessionID
+func MakeCookie(sessionID string) (cookie http.Cookie, err error) {
+	if len(sessionID) == 0 {
+		return cookie, errors.New("sessionId must have a value")
+	}
+
+	cookie = http.Cookie{
+		Name:  "session",
+		Value: sessionID,
+	}
+	return cookie, err
 }
 
-var Client HTTPClient
-
-func init() {
-	Client = &http.Client{}
-}
-
+// Fetch fetches input for advent of code url and a user's session cookie
 func Fetch(url string, cookie http.Cookie) (res *http.Response, err error) {
 	if err = validateURL(url); err != nil {
 		return res, err
@@ -98,7 +108,7 @@ func Fetch(url string, cookie http.Cookie) (res *http.Response, err error) {
 	}
 
 	req.AddCookie(&cookie)
-	res, err = Client.Do(req)
+	res, err = client.Do(req)
 	if err != nil {
 		return res, err
 	}

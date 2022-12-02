@@ -169,30 +169,52 @@ func TestErrorIfCookieIsExpired(t *testing.T) {
 	}
 }
 
+// Test Cookie Creation
+func TestCreatingCookie(t *testing.T) {
+	t.Run("Should create session cookie", func(t *testing.T) {
+		sessionID := "abc"
+
+		cookie, _ := MakeCookie(sessionID)
+		if cookie.Value != sessionID {
+			t.Errorf("Expected cookie to have value %s, got %s", sessionID, cookie.Value)
+		}
+	})
+
+	t.Run("Should return error if no sessionID", func(t *testing.T) {
+		var sessionID string
+
+		if _, err := MakeCookie(sessionID); err == nil {
+			t.Error("Expected error when no sessionID")
+		}
+
+	})
+}
+
 // Tests Fetching Inputs
 func TestFetching(t *testing.T) {
 	t.Parallel()
-	t.Run("Should not return error with successful request", func(t *testing.T) {
-		t.Parallel()
 
+	// These tests cannot run in parallel because they share a global variable
+	t.Run("Should not return error with successful request", func(t *testing.T) {
 		url := "https://adventofcode.com/2021/day/1"
 		cookie := http.Cookie{
 			Name:  "session",
 			Value: "abc123",
 		}
+
+		client = &mockClient{res: http.Response{StatusCode: 200}}
 		if _, err := Fetch(url, cookie); err != nil {
 			t.Error(err)
 		}
 	})
 
 	t.Run("Should return error for invalid url", func(t *testing.T) {
-		t.Parallel()
-
 		url := "http://google.com"
 		cookie := http.Cookie{
 			Name:  "session",
 			Value: "abc123",
 		}
+		client = &mockClient{}
 
 		if _, err := Fetch(url, cookie); err == nil {
 			t.Errorf("Should return an error with invalid url: %s", url)
@@ -200,12 +222,11 @@ func TestFetching(t *testing.T) {
 	})
 
 	t.Run("Should return error for invalid cookie", func(t *testing.T) {
-		t.Parallel()
-
 		url := "https://adventofcode.com/2021/day/1"
 		cookie := http.Cookie{
 			Name: "invalid",
 		}
+		client = &mockClient{}
 
 		if _, err := Fetch(url, cookie); err == nil {
 			t.Errorf("Should return error with invalid cooke: %s", cookie.String())
@@ -213,30 +234,27 @@ func TestFetching(t *testing.T) {
 	})
 
 	t.Run("Should return error if request has failed", func(t *testing.T) {
-		t.Parallel()
-
 		url := "https://adventofcode.com/2021/day/1"
 		cookie := http.Cookie{
 			Name:  "session",
 			Value: "abc123",
 		}
 
-		res := http.Response{
+		expected := http.Response{
 			StatusCode: 404,
 		}
-		Client = &mockClient{
-			res: res,
+
+		client = &mockClient{
+			res: expected,
 			err: errors.New("There was an error fetching the site"),
 		}
 
-		if _, err := Fetch(url, cookie); err == nil {
-			t.Error("Response should be an error")
+		if res, err := Fetch(url, cookie); err == nil {
+			t.Errorf("Request should return an error with status code %d, but got %d", expected.StatusCode, res.StatusCode)
 		}
 	})
 
 	t.Run("Should return result", func(t *testing.T) {
-		t.Parallel()
-
 		url := "https://adventofcode.com/2021/day/1"
 		cookie := http.Cookie{
 			Name:  "session",
@@ -246,19 +264,18 @@ func TestFetching(t *testing.T) {
 		expectedRes := http.Response{
 			StatusCode: 200,
 		}
-		Client = &mockClient{
+		client = &mockClient{
 			res: expectedRes,
 		}
 
 		res, err := Fetch(url, cookie)
 		if err != nil {
-			t.Error("Response should be an error")
+			t.Errorf("Should not have an error, but got %s", err)
 		}
 
 		if res.StatusCode != expectedRes.StatusCode {
 			t.Errorf("Expected res.StatusCode to be %d, instead got %d", expectedRes.StatusCode, res.StatusCode)
 		}
-
 	})
 }
 

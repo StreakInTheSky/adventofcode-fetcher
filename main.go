@@ -1,3 +1,4 @@
+// Grabs input from Advent Of Code Events
 package main
 
 import (
@@ -5,6 +6,7 @@ import (
 	"os"
 
 	"github.com/streakinthesky/adventofcode-fetcher/cli"
+	"github.com/streakinthesky/adventofcode-fetcher/fetcher"
 )
 
 func main() {
@@ -13,8 +15,20 @@ func main() {
 		handleError(err, 1)
 	}
 
-	println(url)
-	return
+	sessionID, err := cli.GrabSessionId()
+	if err != nil {
+		handleError(err, 1)
+	}
+
+	cookie, err := fetcher.MakeCookie(sessionID)
+	if err != nil {
+		handleError(err, 1)
+	}
+
+	_, err = fetcher.Fetch(url, cookie)
+	if err != nil {
+		handleError(err, 1)
+	}
 }
 
 func handleError(err error, exitCode int) {
