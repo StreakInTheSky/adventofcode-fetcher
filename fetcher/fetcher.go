@@ -17,6 +17,12 @@ import (
 const firstYear = 2015
 const currentYear = 2022
 
+type httpClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+var client httpClient = &http.Client{}
+
 func validateURL(inputURL string) error {
 	parsedURL, err := url.Parse(inputURL)
 
@@ -73,44 +79,36 @@ func checkCookie(cookie http.Cookie) error {
 	return nil
 }
 
-func MakeCookie(sessionId string) (cookie http.Cookie, err error) {
-	if len(sessionId) == 0 {
+// MakeCookie makes a session cookie from a sessionID
+func MakeCookie(sessionID string) (cookie http.Cookie, err error) {
+	if len(sessionID) == 0 {
 		return cookie, errors.New("sessionId must have a value")
 	}
 
 	cookie = http.Cookie{
 		Name:  "session",
-		Value: sessionId,
+		Value: sessionID,
 	}
 	return cookie, err
 }
 
-type HTTPClient interface {
-	Do(req *http.Request) (*http.Response, error)
-}
-
-type Fetcher struct {
-	Client HTTPClient
-	url    string
-	cookie http.Cookie
-}
-
-func (f Fetcher) Fetch() (res *http.Response, err error) {
-	if err = validateURL(f.url); err != nil {
+// Fetch fetches input for advent of code url and a user's session cookie
+func Fetch(url string, cookie http.Cookie) (res *http.Response, err error) {
+	if err = validateURL(url); err != nil {
 		return res, err
 	}
 
-	if err = checkCookie(f.cookie); err != nil {
+	if err = checkCookie(cookie); err != nil {
 		return res, err
 	}
 
-	req, err := http.NewRequest("GET", f.url, nil)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return res, err
 	}
 
-	req.AddCookie(&f.cookie)
-	res, err = f.Client.Do(req)
+	req.AddCookie(&cookie)
+	res, err = client.Do(req)
 	if err != nil {
 		return res, err
 	}
