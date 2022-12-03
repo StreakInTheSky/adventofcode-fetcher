@@ -45,7 +45,7 @@ func TestGrabbingSessionId(t *testing.T) {
 		readFile = mockReadFile([]byte{}, nil)
 		getEnv = mockGetEnv("")
 
-		sessionID, err := GrabSessionId()
+		sessionID, err := GrabSessionID()
 		if err == nil {
 			t.Errorf("Expected an error, got %s", sessionID)
 		}
@@ -58,7 +58,7 @@ func TestGrabbingSessionId(t *testing.T) {
 		readFile = mockReadFile(mockFile, nil)
 		getEnv = mockGetEnv("")
 
-		sessionID, err := GrabSessionId()
+		sessionID, err := GrabSessionID()
 		if err != nil {
 			t.Errorf("Expected no error, got %s", err)
 		}
@@ -74,7 +74,7 @@ func TestGrabbingSessionId(t *testing.T) {
 		readFile = mockReadFile([]byte{}, errors.New("No file"))
 		getEnv = mockGetEnv(mockValue)
 
-		sessionID, err := GrabSessionId()
+		sessionID, err := GrabSessionID()
 		if err != nil {
 			t.Errorf("Expected no error, got %s", err)
 		}
@@ -91,7 +91,26 @@ func TestGrabbingSessionId(t *testing.T) {
 		readFile = mockReadFile(mockFile, nil)
 		getEnv = mockGetEnv(mockValue)
 
-		sessionID, err := GrabSessionId()
+		sessionID, err := GrabSessionID()
+		if err != nil {
+			t.Errorf("Expected no error, got %s", err)
+		}
+		if sessionID != expected {
+			t.Errorf("Expected %s, got %s", expected, sessionID)
+		}
+	})
+
+	t.Run("Must return a single line string", func(t *testing.T) {
+		mockFile := `line1
+		line2
+		line3
+		`
+		expected := "line1"
+
+		readFile = mockReadFile([]byte(mockFile), nil)
+		getEnv = mockGetEnv("")
+
+		sessionID, err := GrabSessionID()
 		if err != nil {
 			t.Errorf("Expected no error, got %s", err)
 		}
