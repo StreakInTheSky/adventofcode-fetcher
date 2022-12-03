@@ -102,7 +102,7 @@ func Fetch(url string, cookie http.Cookie) (res *http.Response, err error) {
 		return res, err
 	}
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", fmt.Sprint(url, "/input"), nil)
 	if err != nil {
 		return res, err
 	}

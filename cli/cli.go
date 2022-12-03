@@ -3,6 +3,7 @@ package cli
 import (
 	"errors"
 	"os"
+	"strings"
 )
 
 var (
@@ -23,17 +24,19 @@ func ParseArgs(args []string) (string, error) {
 	return args[2], nil
 }
 
-func GrabSessionId() (sessionId string, err error) {
+func GrabSessionID() (sessionID string, err error) {
 	fileContent, err := readFile("./session")
 	if err != nil {
-		sessionId = getEnv("SESSION")
+		sessionID = getEnv("SESSION")
 	} else {
-		sessionId = string(fileContent)
+		sessionID = string(fileContent)
 	}
 
-	if len(sessionId) == 0 {
-		return sessionId, errors.New("No session id found")
+	if len(sessionID) == 0 {
+		return sessionID, errors.New("No session id found")
 	}
 
-	return sessionId, nil
+	sessionID = strings.Fields(sessionID)[0]
+
+	return sessionID, nil
 }
