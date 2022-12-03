@@ -3,6 +3,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/streakinthesky/adventofcode-fetcher/cli"
@@ -15,7 +16,7 @@ func main() {
 		handleError(err, 1)
 	}
 
-	sessionID, err := cli.GrabSessionId()
+	sessionID, err := cli.GrabSessionID()
 	if err != nil {
 		handleError(err, 1)
 	}
@@ -25,13 +26,21 @@ func main() {
 		handleError(err, 1)
 	}
 
-	_, err = fetcher.Fetch(url, cookie)
+	res, err := fetcher.Fetch(url, cookie)
 	if err != nil {
 		handleError(err, 1)
 	}
+	defer res.Body.Close()
 }
 
 func handleError(err error, exitCode int) {
 	fmt.Fprintln(os.Stderr, err)
 	os.Exit(exitCode)
+}
+
+func handleOutput(body io.Reader, target *os.File) (err error) {
+	if _, err := io.Copy(target, body); err != nil {
+		return err
+	}
+	return err
 }
