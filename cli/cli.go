@@ -2,6 +2,7 @@ package cli
 
 import (
 	"errors"
+	"flag"
 	"os"
 	"strings"
 )
@@ -9,25 +10,40 @@ import (
 var (
 	readFile = os.ReadFile
 	getEnv   = os.Getenv
+	initArgs = flag.Args
 )
 
-func ParseArgs(args []string) (string, error) {
-	var url string
-	if len(args) <= 1 || args[1] != "fetch" {
-		return url, errors.New("did you want to call fetch?")
+var sessionID = flag.String("session", "", "session token from advent of code")
+
+const SESSION_TOKEN = "AOC_SESSION"
+
+type parameters struct {
+	SessionID *string
+	Url       string
+}
+
+func Run() (params *parameters, err error) {
+	flag.Parse()
+	args := initArgs()
+	if len(args) <= 1 || args[0] != "fetch" {
+		return params, errors.New("did you want to call fetch?")
 	}
 
-	if len(args) < 3 {
-		return url, errors.New("please enter a url")
+	if len(args) < 2 {
+		return params, errors.New("please enter a url")
 	}
 
-	return args[2], nil
+	params = &parameters{
+		Url: args[1],
+	}
+
+	return params, nil
 }
 
 func GrabSessionID() (sessionID string, err error) {
 	fileContent, err := readFile("./session")
 	if err != nil {
-		sessionID = getEnv("SESSION")
+		sessionID = getEnv(SESSION_TOKEN)
 	} else {
 		sessionID = string(fileContent)
 	}

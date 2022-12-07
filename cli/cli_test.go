@@ -8,34 +8,38 @@ import (
 func TestParsingArgs(t *testing.T) {
 	t.Run("Error if no args in inputs", func(t *testing.T) {
 		args := []string{"command"}
+		initArgs = mockFlagArgs(args)
 
-		if _, err := ParseArgs(args); err == nil {
+		if _, err := Run(); err == nil {
 			t.Error("Should return error if no args")
 		}
 	})
 
 	t.Run("First argument is fetch", func(t *testing.T) {
-		args := []string{"command", "fetch", "url"}
+		args := []string{"fetch", "url"}
+		initArgs = mockFlagArgs(args)
 
-		if _, err := ParseArgs(args); err != nil {
-			t.Error("First argument as fetch should be valid")
+		if _, err := Run(); err != nil {
+			t.Errorf("First argument as fetch should be valid. Got error: %s", err.Error())
 		}
 	})
 
 	t.Run("Error if no url passed as second argument", func(t *testing.T) {
-		args := []string{"command", "fetch"}
+		args := []string{"fetch"}
+		initArgs = mockFlagArgs(args)
 
-		if _, err := ParseArgs(args); err == nil {
+		if _, err := Run(); err == nil {
 			t.Error("Not passing a third argument should return an error")
 		}
 	})
 
 	t.Run("Should return url", func(t *testing.T) {
-		args := []string{"command", "fetch", "url"}
+		args := []string{"fetch", "url"}
+		initArgs = mockFlagArgs(args)
 
-		url, err := ParseArgs(args)
-		if err != nil || url != args[2] {
-			t.Errorf("Should return %s, got %s", args[2], url)
+		params, err := Run()
+		if err != nil || params.Url != args[1] {
+			t.Errorf("Should return %s, got %s", args[1], params.Url)
 		}
 	})
 }
@@ -118,6 +122,12 @@ func TestGrabbingSessionId(t *testing.T) {
 			t.Errorf("Expected %s, got %s", expected, sessionID)
 		}
 	})
+}
+
+func mockFlagArgs(args []string) func() []string {
+	return func() []string {
+		return args
+	}
 }
 
 func mockReadFile(file []byte, err error) func(string) ([]byte, error) {

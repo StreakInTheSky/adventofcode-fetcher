@@ -16,7 +16,7 @@ var (
 )
 
 func main() {
-	url, err := cli.ParseArgs(os.Args)
+	params, err := cli.Run()
 	if err != nil {
 		handleError(err, 2)
 	}
@@ -31,7 +31,7 @@ func main() {
 		handleError(err, 1)
 	}
 
-	res, err := fetcher.Fetch(url, cookie)
+	res, err := fetcher.Fetch(params.Url, cookie)
 	if err != nil {
 		handleError(err, 18)
 	}
