@@ -16,12 +16,12 @@ var (
 )
 
 func main() {
-	url, err := cli.ParseArgs(os.Args)
+	url, sessionFlag, err := cli.Run()
 	if err != nil {
 		handleError(err, 2)
 	}
 
-	sessionID, err := cli.GrabSessionID()
+	sessionID, err := cli.GrabSessionID(sessionFlag)
 	if err != nil {
 		handleError(err, 2)
 	}
