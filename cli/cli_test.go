@@ -23,12 +23,35 @@ func TestParsingArgs(t *testing.T) {
 		}
 	})
 
+	t.Run("Error if first argument not fetch", func(t *testing.T) {
+		var err error
+		args := []string{"notfetch"}
+		initArgs = mockFlagArgs(args)
+		expectedErrMsg := "Did you want to call \"fetch\"?"
+
+		if _, _, err = Run(); err == nil {
+			t.Error("Expected an error")
+		}
+
+		errMsg := err.Error()
+		if errMsg != expectedErrMsg {
+			t.Errorf("Expected error: %s, but got error: %s", expectedErrMsg, errMsg)
+		}
+	})
+
 	t.Run("Error if no url passed as second argument", func(t *testing.T) {
+		var err error
 		args := []string{"fetch"}
 		initArgs = mockFlagArgs(args)
+		expectedErrMsg := "Please enter a url"
 
-		if _, _, err := Run(); err == nil {
-			t.Error("Not passing a third argument should return an error")
+		if _, _, err = Run(); err == nil {
+			t.Error("Expected and error")
+		}
+
+		errMsg := err.Error()
+		if errMsg != expectedErrMsg {
+			t.Errorf("Expected error: %s, but got error: %s", expectedErrMsg, errMsg)
 		}
 	})
 

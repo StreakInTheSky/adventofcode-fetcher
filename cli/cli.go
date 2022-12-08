@@ -21,12 +21,12 @@ const SESSION_TOKEN = "AOC_SESSION"
 func Run() (url, sessionParam string, err error) {
 	flag.Parse()
 	args := initArgs()
-	if len(args) <= 1 || args[0] != "fetch" {
-		return url, sessionParam, errors.New("did you want to call fetch?")
+	if len(args) < 1 || args[0] != "fetch" {
+		return url, sessionParam, errors.New("Did you want to call \"fetch\"?")
 	}
 
 	if len(args) < 2 {
-		return url, sessionParam, errors.New("please enter a url")
+		return url, sessionParam, errors.New("Please enter a url")
 	}
 
 	return args[1], *sessionFlag, nil
