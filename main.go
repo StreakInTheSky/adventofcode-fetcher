@@ -16,12 +16,12 @@ var (
 )
 
 func main() {
-	params, err := cli.Run()
+	url, sessionFlag, err := cli.Run()
 	if err != nil {
 		handleError(err, 2)
 	}
 
-	sessionID, err := cli.GrabSessionID()
+	sessionID, err := cli.GrabSessionID(sessionFlag)
 	if err != nil {
 		handleError(err, 2)
 	}
@@ -31,7 +31,7 @@ func main() {
 		handleError(err, 1)
 	}
 
-	res, err := fetcher.Fetch(params.Url, cookie)
+	res, err := fetcher.Fetch(url, cookie)
 	if err != nil {
 		handleError(err, 18)
 	}

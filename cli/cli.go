@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -13,46 +14,45 @@ var (
 	initArgs = flag.Args
 )
 
-var sessionID = flag.String("session", "", "session token from advent of code")
+var sessionFlag = flag.String("session", "./session", "session token from advent of code")
 
 const SESSION_TOKEN = "AOC_SESSION"
 
-type parameters struct {
-	SessionID *string
-	Url       string
-}
-
-func Run() (params *parameters, err error) {
+func Run() (url, sessionParam string, err error) {
 	flag.Parse()
 	args := initArgs()
 	if len(args) <= 1 || args[0] != "fetch" {
-		return params, errors.New("did you want to call fetch?")
+		return url, sessionParam, errors.New("did you want to call fetch?")
 	}
 
 	if len(args) < 2 {
-		return params, errors.New("please enter a url")
+		return url, sessionParam, errors.New("please enter a url")
 	}
 
-	params = &parameters{
-		Url: args[1],
-	}
-
-	return params, nil
+	return args[1], *sessionFlag, nil
 }
 
-func GrabSessionID() (sessionID string, err error) {
-	fileContent, err := readFile("./session")
-	if err != nil {
-		sessionID = getEnv(SESSION_TOKEN)
+func isPath(input string) bool {
+	return regexp.MustCompile("^[./]").MatchString(input)
+}
+
+func GrabSessionID(sessionParam string) (sessionID string, err error) {
+	err = errors.New("No session id found")
+
+	if isPath(sessionParam) {
+		fileContent, err := readFile(sessionParam)
+		if err != nil {
+			return sessionID, err
+		}
+
+		sessionID = strings.Fields(string(fileContent))[0]
 	} else {
-		sessionID = string(fileContent)
+		sessionID = sessionParam
 	}
 
 	if len(sessionID) == 0 {
-		return sessionID, errors.New("No session id found")
+		return sessionID, err
 	}
-
-	sessionID = strings.Fields(sessionID)[0]
 
 	return sessionID, nil
 }
