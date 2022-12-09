@@ -1,4 +1,4 @@
-package cli
+package main
 
 import (
 	"errors"
@@ -18,7 +18,7 @@ var sessionFlag = flag.String("session", "./session", "session token from advent
 
 const SESSION_TOKEN = "AOC_SESSION"
 
-func Run() (url, sessionParam string, err error) {
+func run() (url, sessionParam string, err error) {
 	flag.Parse()
 	args := initArgs()
 	if len(args) < 1 || args[0] != "fetch" {
@@ -36,7 +36,7 @@ func isPath(input string) bool {
 	return regexp.MustCompile("^[./]").MatchString(input)
 }
 
-func GrabSessionID(sessionParam string) (sessionID string, err error) {
+func grabSessionID(sessionParam string) (sessionID string, err error) {
 	err = errors.New("No session id found")
 
 	if isPath(sessionParam) {

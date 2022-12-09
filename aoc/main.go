@@ -6,9 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-
-	"github.com/streakinthesky/adventofcode-fetcher/cli"
-	"github.com/streakinthesky/adventofcode-fetcher/fetcher"
 )
 
 var (
@@ -16,22 +13,22 @@ var (
 )
 
 func main() {
-	url, sessionFlag, err := cli.Run()
+	url, sessionFlag, err := run()
 	if err != nil {
 		handleError(err, 2)
 	}
 
-	sessionID, err := cli.GrabSessionID(sessionFlag)
+	sessionID, err := grabSessionID(sessionFlag)
 	if err != nil {
 		handleError(err, 2)
 	}
 
-	cookie, err := fetcher.MakeCookie(sessionID)
+	cookie, err := makeCookie(sessionID)
 	if err != nil {
 		handleError(err, 1)
 	}
 
-	res, err := fetcher.Fetch(url, cookie)
+	res, err := fetch(url, cookie)
 	if err != nil {
 		handleError(err, 18)
 	}

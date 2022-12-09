@@ -1,4 +1,4 @@
-package cli
+package main
 
 import (
 	"testing"
@@ -9,7 +9,7 @@ func TestParsingArgs(t *testing.T) {
 		args := []string{"command"}
 		initArgs = mockFlagArgs(args)
 
-		if _, _, err := Run(); err == nil {
+		if _, _, err := run(); err == nil {
 			t.Error("Should return error if no args")
 		}
 	})
@@ -18,7 +18,7 @@ func TestParsingArgs(t *testing.T) {
 		args := []string{"fetch", "url"}
 		initArgs = mockFlagArgs(args)
 
-		if _, _, err := Run(); err != nil {
+		if _, _, err := run(); err != nil {
 			t.Errorf("First argument as fetch should be valid. Got error: %s", err.Error())
 		}
 	})
@@ -29,7 +29,7 @@ func TestParsingArgs(t *testing.T) {
 		initArgs = mockFlagArgs(args)
 		expectedErrMsg := "Did you want to call \"fetch\"?"
 
-		if _, _, err = Run(); err == nil {
+		if _, _, err = run(); err == nil {
 			t.Error("Expected an error")
 		}
 
@@ -45,7 +45,7 @@ func TestParsingArgs(t *testing.T) {
 		initArgs = mockFlagArgs(args)
 		expectedErrMsg := "Please enter a url"
 
-		if _, _, err = Run(); err == nil {
+		if _, _, err = run(); err == nil {
 			t.Error("Expected and error")
 		}
 
@@ -59,7 +59,7 @@ func TestParsingArgs(t *testing.T) {
 		args := []string{"fetch", "url"}
 		initArgs = mockFlagArgs(args)
 
-		url, _, err := Run()
+		url, _, err := run()
 		if err != nil {
 			t.Errorf("Should not have error, got error: %s", err.Error())
 		}
@@ -75,7 +75,7 @@ func TestParsingArgs(t *testing.T) {
 
 		defaultSessionFlagVal := "./session"
 
-		_, sessionID, err := Run()
+		_, sessionID, err := run()
 		if err != nil {
 			t.Errorf("Should not have an error, got error: %s", err.Error())
 		}
@@ -86,11 +86,11 @@ func TestParsingArgs(t *testing.T) {
 	})
 }
 
-func TestGrabbingSessionId(t *testing.T) {
+func TestGrabSessionId(t *testing.T) {
 	t.Run("Returns error if no cookie found", func(t *testing.T) {
 		readFile = mockReadFile([]byte{}, nil)
 
-		sessionID, err := GrabSessionID("")
+		sessionID, err := grabSessionID("")
 		if err == nil {
 			t.Errorf("Expected an error, got %s", sessionID)
 		}
@@ -102,7 +102,7 @@ func TestGrabbingSessionId(t *testing.T) {
 		pathToFile := "/path"
 		readFile = mockReadFile(mockFile, nil)
 
-		sessionID, err := GrabSessionID(pathToFile)
+		sessionID, err := grabSessionID(pathToFile)
 		if err != nil {
 			t.Errorf("Expected no error, got %s", err)
 		}
@@ -120,7 +120,7 @@ func TestGrabbingSessionId(t *testing.T) {
 		pathToFile := "/path"
 		readFile = mockReadFile([]byte(mockFile), nil)
 
-		sessionID, err := GrabSessionID(pathToFile)
+		sessionID, err := grabSessionID(pathToFile)
 		if err != nil {
 			t.Errorf("Expected no error, got %s", err.Error())
 		}
@@ -132,7 +132,7 @@ func TestGrabbingSessionId(t *testing.T) {
 	t.Run("Should return session id from params", func(t *testing.T) {
 		expectedID := "abc123"
 
-		actualID, err := GrabSessionID(expectedID)
+		actualID, err := grabSessionID(expectedID)
 		if err != nil {
 			t.Errorf("Expected no error, got error: %s", err.Error())
 		}
@@ -147,7 +147,7 @@ func TestGrabbingSessionId(t *testing.T) {
 		readFile = mockReadFile([]byte(expectedId), nil)
 		idPath := "/file/path"
 
-		sessionID, err := GrabSessionID(idPath)
+		sessionID, err := grabSessionID(idPath)
 		if err != nil {
 			t.Errorf("Expected no error, got error: %s", err.Error())
 		}
