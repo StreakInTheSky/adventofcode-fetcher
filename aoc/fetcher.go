@@ -1,7 +1,4 @@
-// Package fetcher grabs inputs for the user from Advent of Code.
-// Validates url inputs for valid Advent of Code urls
-// Makes sure there is a cookie for the request
-package fetcher
+package main
 
 import (
 	"errors"
@@ -80,7 +77,7 @@ func checkCookie(cookie http.Cookie) error {
 }
 
 // MakeCookie makes a session cookie from a sessionID
-func MakeCookie(sessionID string) (cookie http.Cookie, err error) {
+func makeCookie(sessionID string) (cookie http.Cookie, err error) {
 	if len(sessionID) == 0 {
 		return cookie, errors.New("sessionId must have a value")
 	}
@@ -93,7 +90,7 @@ func MakeCookie(sessionID string) (cookie http.Cookie, err error) {
 }
 
 // Fetch fetches input for advent of code url and a user's session cookie
-func Fetch(url string, cookie http.Cookie) (res *http.Response, err error) {
+func fetch(url string, cookie http.Cookie) (res *http.Response, err error) {
 	if err = validateURL(url); err != nil {
 		return res, err
 	}

@@ -1,4 +1,4 @@
-package fetcher
+package main
 
 import (
 	"errors"
@@ -174,7 +174,7 @@ func TestCreatingCookie(t *testing.T) {
 	t.Run("Should create session cookie", func(t *testing.T) {
 		sessionID := "abc"
 
-		cookie, _ := MakeCookie(sessionID)
+		cookie, _ := makeCookie(sessionID)
 		if cookie.Value != sessionID {
 			t.Errorf("Expected cookie to have value %s, got %s", sessionID, cookie.Value)
 		}
@@ -183,7 +183,7 @@ func TestCreatingCookie(t *testing.T) {
 	t.Run("Should return error if no sessionID", func(t *testing.T) {
 		var sessionID string
 
-		if _, err := MakeCookie(sessionID); err == nil {
+		if _, err := makeCookie(sessionID); err == nil {
 			t.Error("Expected error when no sessionID")
 		}
 
@@ -203,7 +203,7 @@ func TestFetching(t *testing.T) {
 		}
 
 		client = &mockClient{res: http.Response{StatusCode: 200}}
-		if _, err := Fetch(url, cookie); err != nil {
+		if _, err := fetch(url, cookie); err != nil {
 			t.Error(err)
 		}
 	})
@@ -216,7 +216,7 @@ func TestFetching(t *testing.T) {
 		}
 		client = &mockClient{}
 
-		if _, err := Fetch(url, cookie); err == nil {
+		if _, err := fetch(url, cookie); err == nil {
 			t.Errorf("Should return an error with invalid url: %s", url)
 		}
 	})
@@ -228,7 +228,7 @@ func TestFetching(t *testing.T) {
 		}
 		client = &mockClient{}
 
-		if _, err := Fetch(url, cookie); err == nil {
+		if _, err := fetch(url, cookie); err == nil {
 			t.Errorf("Should return error with invalid cooke: %s", cookie.String())
 		}
 	})
@@ -249,7 +249,7 @@ func TestFetching(t *testing.T) {
 			err: errors.New("There was an error fetching the site"),
 		}
 
-		if res, err := Fetch(url, cookie); err == nil {
+		if res, err := fetch(url, cookie); err == nil {
 			t.Errorf("Request should return an error with status code %d, but got %d", expected.StatusCode, res.StatusCode)
 		}
 	})
@@ -268,7 +268,7 @@ func TestFetching(t *testing.T) {
 			res: expectedRes,
 		}
 
-		res, err := Fetch(url, cookie)
+		res, err := fetch(url, cookie)
 		if err != nil {
 			t.Errorf("Should not have an error, but got %s", err)
 		}
