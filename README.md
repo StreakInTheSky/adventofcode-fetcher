@@ -4,7 +4,7 @@ CLI command that fetches inputs for Advent Of Code event puzzles
 ## Installation
 ### go install
 ```
-go install github.com/streakinthesky/adventofcode-fetcher/aoc
+go install github.com/streakinthesky/adventofcode-fetcher/aoc@latest
 ```
 
 ## To Use
