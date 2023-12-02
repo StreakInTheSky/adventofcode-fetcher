@@ -12,7 +12,7 @@ import (
 )
 
 const firstYear = 2015
-const currentYear = 2022
+const currentYear = 2023
 
 type httpClient interface {
 	Do(req *http.Request) (*http.Response, error)

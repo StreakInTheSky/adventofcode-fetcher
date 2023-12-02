@@ -81,7 +81,7 @@ func TestErrorOnEarlyYear(t *testing.T) {
 
 func TestErrorOnLateYear(t *testing.T) {
 	url := "http://adventofcode.com/"
-	const year = 2023
+	const year = 2024
 
 	if err := validateURL(fmt.Sprintf("%s%d", url, year)); err == nil {
 		t.Errorf("%d should be an invalid year", year)
