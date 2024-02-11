@@ -12,7 +12,6 @@ import (
 )
 
 const firstYear = 2015
-const currentYear = 2023
 
 type httpClient interface {
 	Do(req *http.Request) (*http.Response, error)
@@ -20,7 +19,8 @@ type httpClient interface {
 
 var client httpClient = &http.Client{}
 
-func validateURL(inputURL string) error {
+// / validates the input URL based on the ETC/UTC-5 date as that is when puzzles are unlocked
+func validateURL(inputURL string, now time.Time) error {
 	parsedURL, err := url.Parse(inputURL)
 
 	if err != nil {
@@ -41,8 +41,9 @@ func validateURL(inputURL string) error {
 	if err != nil {
 		return err
 	}
-	if year < firstYear || year > currentYear {
-		return fmt.Errorf("Invalid year: %d", year)
+
+	if err := validateYear(year, now); err != nil {
+		return err
 	}
 
 	if parsedPath[2] != "day" {
@@ -55,6 +56,19 @@ func validateURL(inputURL string) error {
 	}
 	if day < 1 || day > 25 {
 		return fmt.Errorf("%d is not a valid day", day)
+	}
+
+	return nil
+}
+
+func validateYear(year int, now time.Time) error {
+	currentYear := now.Year()
+	if year < firstYear || year > currentYear {
+		return fmt.Errorf("Invalid year: %d", year)
+	}
+	currentMonth := now.Month()
+	if year == currentYear && currentMonth != time.December {
+		return errors.New("It is not December yet")
 	}
 
 	return nil
@@ -91,7 +105,13 @@ func makeCookie(sessionID string) (cookie http.Cookie, err error) {
 
 // Fetch fetches input for advent of code url and a user's session cookie
 func fetch(url string, cookie http.Cookie) (res *http.Response, err error) {
-	if err = validateURL(url); err != nil {
+	est, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		return res, err	
+	}
+
+	today := time.Now().In(est);
+	if err = validateURL(url, today); err != nil {
 		return res, err
 	}
 
