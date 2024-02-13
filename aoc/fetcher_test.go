@@ -9,36 +9,50 @@ import (
 )
 
 // Tests for Url Validater
+const now_string = "2023-01-01 00:01:01" // the date to compare for validation
+
+// Get a time struct from the given today to test against
+func getNow(t *testing.T) time.Time {
+	now, err := time.Parse("2006-01-02 15:04:05", now_string)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return now
+}
 
 func TestValidateUrl(t *testing.T) {
 	url := "https://adventofcode.com/2022/day/1"
+	now := getNow(t)
 
-	if err := validateURL(url); err != nil {
+	if err := validateURL(url, now); err != nil {
 		t.Error(err)
 	}
 }
 
 func TestErrorIfNotUrl(t *testing.T) {
 	url := "123"
+	now := getNow(t)
 
-	if err := validateURL(url); err == nil {
+	if err := validateURL(url, now); err == nil {
 		t.Errorf("%s should not be a valid url", url)
 	}
 }
 
 func TestErrorIfNotAdventOfCode(t *testing.T) {
 	url := "https://google.com"
+	now := getNow(t)
 
-	if err := validateURL(url); err == nil {
+	if err := validateURL(url, now); err == nil {
 		t.Errorf("%s should return an error", url)
 	}
-
 }
 
 func TestErrorIfNoPath(t *testing.T) {
 	url := "https://adventofcode.com"
+	now := getNow(t)
 
-	if err := validateURL(url); err == nil {
+	if err := validateURL(url, now); err == nil {
 		t.Errorf("%s should return an error", url)
 	}
 }
@@ -46,8 +60,9 @@ func TestErrorIfNoPath(t *testing.T) {
 func TestErrorIfPathTooShort(t *testing.T) {
 	url := "https://adventofcode.com"
 	path := "/1/2"
+	now := getNow(t)
 
-	if err := validateURL(fmt.Sprintf("%s%s", url, path)); err == nil {
+	if err := validateURL(fmt.Sprintf("%s%s", url, path), now); err == nil {
 		t.Errorf("Should have error because %s is too short", path)
 	}
 }
@@ -55,8 +70,9 @@ func TestErrorIfPathTooShort(t *testing.T) {
 func TestErrorIfPathTooLong(t *testing.T) {
 	url := "https://adventofcode.com"
 	path := "/1/2/3/4"
+	now := getNow(t)
 
-	if err := validateURL(fmt.Sprintf("%s%s", url, path)); err == nil {
+	if err := validateURL(fmt.Sprintf("%s%s", url, path), now); err == nil {
 		t.Errorf("Should have error because %s is too long", path)
 	}
 }
@@ -64,44 +80,30 @@ func TestErrorIfPathTooLong(t *testing.T) {
 func TestErrorIfNoYear(t *testing.T) {
 	url := "http://adventofcode.com/"
 	path := "not/a/year"
+	now := getNow(t)
 
-	if err := validateURL(fmt.Sprintf("%s%s", url, path)); err == nil {
+	if err := validateURL(fmt.Sprintf("%s%s", url, path), now); err == nil {
 		t.Errorf("Should have error because %s does not have a year", path)
-	}
-}
-
-func TestErrorOnEarlyYear(t *testing.T) {
-	url := "http://adventofcode.com/"
-	const year = 2014
-
-	if err := validateURL(fmt.Sprintf("%s%d", url, year)); err == nil {
-		t.Errorf("%d should be an invalid year", year)
-	}
-}
-
-func TestErrorOnLateYear(t *testing.T) {
-	url := "http://adventofcode.com/"
-	const year = 2024
-
-	if err := validateURL(fmt.Sprintf("%s%d", url, year)); err == nil {
-		t.Errorf("%d should be an invalid year", year)
 	}
 }
 
 func TestErrorIfDayNotInPath(t *testing.T) {
 	url := "http://adventofcode.com/2021"
 	notDay := "/not/1"
+	now := getNow(t)
 
-	if err := validateURL(fmt.Sprintf("%s%s", url, notDay)); err == nil {
+	if err := validateURL(fmt.Sprintf("%s%s", url, notDay), now); err == nil {
 		t.Error("Should be an error when no day in url", url)
 	}
 }
 
+// Tests for Day Validation
 func TestErrorIfDayTooLow(t *testing.T) {
 	url := "http://adventofcode.com/2021/day/"
 	day := 0
+	now := getNow(t)
 
-	if err := validateURL(fmt.Sprintf("%s%d", url, day)); err == nil {
+	if err := validateURL(fmt.Sprintf("%s%d", url, day), now); err == nil {
 		t.Errorf("%d should not be a valid day", day)
 	}
 }
@@ -109,14 +111,42 @@ func TestErrorIfDayTooLow(t *testing.T) {
 func TestErrorIfDayTooHigh(t *testing.T) {
 	url := "http://adventofcode.com/2021/day/"
 	day := 26
+	now := getNow(t)
 
-	if err := validateURL(fmt.Sprintf("%s%d", url, day)); err == nil {
+	if err := validateURL(fmt.Sprintf("%s%d", url, day), now); err == nil {
 		t.Errorf("%d should not be a valid day", day)
 	}
 }
 
-// Tests for Cookie checker
+// Tests for year validation
+func TestErrorOnEarlyYear(t *testing.T) {
+	const year = 2014
+	now := getNow(t)
 
+	if err := validateYear(year, now); err == nil {
+		t.Errorf("%d should be an invalid year", year)
+	}
+}
+
+func TestErrorOnLateYear(t *testing.T) {
+	const year = 2024
+	now := getNow(t)
+
+	if err := validateYear(year, now); err == nil {
+		t.Errorf("%d should be an invalid year", year)
+	}
+}
+
+func TestErrorOnCurrentYearEarlyMonth(t *testing.T) {
+	const year = 2023
+	now := getNow(t)
+
+	if err := validateYear(year, now); err == nil {
+		t.Errorf("%d should be an invalid year for the current date, %s", year, now_string)
+	}
+}
+
+// Tests for Cookie checker
 func TestValidCookie(t *testing.T) {
 	cookie := http.Cookie{
 		Name:  "session",
