@@ -9,11 +9,12 @@ import (
 )
 
 // Tests for Url Validater
-const now_string = "2023-01-01 00:01:01" // the date to compare for validation
+const OUTSIDE_ADVENT_DATE = "2023-01-01 00:00:01" // the date to compare for validation
+const INSIDE_ADVENT_DATE = "2022-12-01 00:00:01"  // the date to compare for validation
 
 // Get a time struct from the given today to test against
-func getNow(t *testing.T) time.Time {
-	now, err := time.Parse("2006-01-02 15:04:05", now_string)
+func getNow(t *testing.T, nowString string) time.Time {
+	now, err := time.Parse("2006-01-02 15:04:05", nowString)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -23,7 +24,7 @@ func getNow(t *testing.T) time.Time {
 
 func TestValidateUrl(t *testing.T) {
 	url := "https://adventofcode.com/2022/day/1"
-	now := getNow(t)
+	now := getNow(t, INSIDE_ADVENT_DATE)
 
 	if err := validateURL(url, now); err != nil {
 		t.Error(err)
@@ -32,7 +33,7 @@ func TestValidateUrl(t *testing.T) {
 
 func TestErrorIfNotUrl(t *testing.T) {
 	url := "123"
-	now := getNow(t)
+	now := getNow(t, INSIDE_ADVENT_DATE)
 
 	if err := validateURL(url, now); err == nil {
 		t.Errorf("%s should not be a valid url", url)
@@ -41,7 +42,7 @@ func TestErrorIfNotUrl(t *testing.T) {
 
 func TestErrorIfNotAdventOfCode(t *testing.T) {
 	url := "https://google.com"
-	now := getNow(t)
+	now := getNow(t, INSIDE_ADVENT_DATE)
 
 	if err := validateURL(url, now); err == nil {
 		t.Errorf("%s should return an error", url)
@@ -50,7 +51,7 @@ func TestErrorIfNotAdventOfCode(t *testing.T) {
 
 func TestErrorIfNoPath(t *testing.T) {
 	url := "https://adventofcode.com"
-	now := getNow(t)
+	now := getNow(t, INSIDE_ADVENT_DATE)
 
 	if err := validateURL(url, now); err == nil {
 		t.Errorf("%s should return an error", url)
@@ -60,7 +61,7 @@ func TestErrorIfNoPath(t *testing.T) {
 func TestErrorIfPathTooShort(t *testing.T) {
 	url := "https://adventofcode.com"
 	path := "/1/2"
-	now := getNow(t)
+	now := getNow(t, INSIDE_ADVENT_DATE)
 
 	if err := validateURL(fmt.Sprintf("%s%s", url, path), now); err == nil {
 		t.Errorf("Should have error because %s is too short", path)
@@ -70,7 +71,7 @@ func TestErrorIfPathTooShort(t *testing.T) {
 func TestErrorIfPathTooLong(t *testing.T) {
 	url := "https://adventofcode.com"
 	path := "/1/2/3/4"
-	now := getNow(t)
+	now := getNow(t, INSIDE_ADVENT_DATE)
 
 	if err := validateURL(fmt.Sprintf("%s%s", url, path), now); err == nil {
 		t.Errorf("Should have error because %s is too long", path)
@@ -80,7 +81,7 @@ func TestErrorIfPathTooLong(t *testing.T) {
 func TestErrorIfNoYear(t *testing.T) {
 	url := "http://adventofcode.com/"
 	path := "not/a/year"
-	now := getNow(t)
+	now := getNow(t, INSIDE_ADVENT_DATE)
 
 	if err := validateURL(fmt.Sprintf("%s%s", url, path), now); err == nil {
 		t.Errorf("Should have error because %s does not have a year", path)
@@ -90,7 +91,7 @@ func TestErrorIfNoYear(t *testing.T) {
 func TestErrorIfDayNotInPath(t *testing.T) {
 	url := "http://adventofcode.com/2021"
 	notDay := "/not/1"
-	now := getNow(t)
+	now := getNow(t, INSIDE_ADVENT_DATE)
 
 	if err := validateURL(fmt.Sprintf("%s%s", url, notDay), now); err == nil {
 		t.Error("Should be an error when no day in url", url)
@@ -101,7 +102,7 @@ func TestErrorIfDayNotInPath(t *testing.T) {
 func TestErrorIfDayTooLow(t *testing.T) {
 	url := "http://adventofcode.com/2021/day/"
 	day := 0
-	now := getNow(t)
+	now := getNow(t, INSIDE_ADVENT_DATE)
 
 	if err := validateURL(fmt.Sprintf("%s%d", url, day), now); err == nil {
 		t.Errorf("%d should not be a valid day", day)
@@ -111,7 +112,17 @@ func TestErrorIfDayTooLow(t *testing.T) {
 func TestErrorIfDayTooHigh(t *testing.T) {
 	url := "http://adventofcode.com/2021/day/"
 	day := 26
-	now := getNow(t)
+	now := getNow(t, INSIDE_ADVENT_DATE)
+
+	if err := validateURL(fmt.Sprintf("%s%d", url, day), now); err == nil {
+		t.Errorf("%d should not be a valid day", day)
+	}
+}
+
+func TestErrorIfDayNotYetOpen(t *testing.T) {
+	url := "http://adventofcode.com/2021/day/"
+	day := 2
+	now := getNow(t, INSIDE_ADVENT_DATE)
 
 	if err := validateURL(fmt.Sprintf("%s%d", url, day), now); err == nil {
 		t.Errorf("%d should not be a valid day", day)
@@ -121,7 +132,7 @@ func TestErrorIfDayTooHigh(t *testing.T) {
 // Tests for year validation
 func TestErrorOnEarlyYear(t *testing.T) {
 	const year = 2014
-	now := getNow(t)
+	now := getNow(t, INSIDE_ADVENT_DATE)
 
 	if err := validateYear(year, now); err == nil {
 		t.Errorf("%d should be an invalid year", year)
@@ -130,7 +141,7 @@ func TestErrorOnEarlyYear(t *testing.T) {
 
 func TestErrorOnLateYear(t *testing.T) {
 	const year = 2024
-	now := getNow(t)
+	now := getNow(t, INSIDE_ADVENT_DATE)
 
 	if err := validateYear(year, now); err == nil {
 		t.Errorf("%d should be an invalid year", year)
@@ -139,10 +150,10 @@ func TestErrorOnLateYear(t *testing.T) {
 
 func TestErrorOnCurrentYearEarlyMonth(t *testing.T) {
 	const year = 2023
-	now := getNow(t)
+	now := getNow(t, OUTSIDE_ADVENT_DATE)
 
 	if err := validateYear(year, now); err == nil {
-		t.Errorf("%d should be an invalid year for the current date, %s", year, now_string)
+		t.Errorf("%d should be an invalid year for the current date, %s", year, OUTSIDE_ADVENT_DATE)
 	}
 }
 
