@@ -58,6 +58,11 @@ func validateURL(inputURL string, now time.Time) error {
 		return fmt.Errorf("%d is not a valid day", day)
 	}
 
+	currDay := now.Day()
+	if day > currDay {
+		return fmt.Errorf("%d is not yet open", day)
+	}
+
 	return nil
 }
 
@@ -107,10 +112,10 @@ func makeCookie(sessionID string) (cookie http.Cookie, err error) {
 func fetch(url string, cookie http.Cookie) (res *http.Response, err error) {
 	est, err := time.LoadLocation("America/New_York")
 	if err != nil {
-		return res, err	
+		return res, err
 	}
 
-	today := time.Now().In(est);
+	today := time.Now().In(est)
 	if err = validateURL(url, today); err != nil {
 		return res, err
 	}
